@@ -8,7 +8,7 @@ import org.gradle.api.internal.AsmBackedClassGenerator;
 import org.gradle.api.tasks.testing.Test;
 
 import com.orbitz.gradle.cobertura.tasks.GenerateCoverageReportTask;
-import com.orbitz.gradle.cobertura.tasks.InstrumentCodeAction;
+import com.orbitz.gragdle.cobertura.tasks.InstrumentCodeAction;
 
 /**
  * Provides Cobertura coverage for Test tasks.
@@ -41,6 +41,10 @@ class CoberturaPlugin implements Plugin<Project> {
         coverageReport.group = "Report"
         GenerateCoverageReportTask xmlCoverageReport = project.tasks.add(name: 'coberturaXml', dependsOn: [ 'cleanTest', 'test' ], type: GenerateCoverageReportTask) {
             format = 'xml'
+        }
+        coverageReport.doLast {
+            // we no longer need the coverage file.  get rid of it so future runs results aren't merged.
+            project.delete(project.file(project.coverageDatafile))
         }
         configureTestTask()
         project.dependencies.add('testRuntime', "net.sourceforge.cobertura:cobertura:${project.coberturaVersion}")
