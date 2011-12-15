@@ -19,6 +19,7 @@ class InstrumentCodeAction implements Action<Task>, IConventionAware {
     Set<File> classesDirs
     Set<String> includes
     Set<String> excludes
+    Set<String> ignores
     def runner
     private ConventionMapping conventionMapping
     
@@ -41,7 +42,7 @@ class InstrumentCodeAction implements Action<Task>, IConventionAware {
                 instrumentDirs << f.path
             }
         }
-        runner.instrument null, getDatafile().path, getDestinationDir()?.path, null, getIncludes() as List,
+        runner.instrument null, getDatafile().path, getDestinationDir()?.path, getIgnores() as List, getIncludes() as List,
                 getExcludes() as List, instrumentDirs as List
     }
     
