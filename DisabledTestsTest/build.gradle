@@ -1,0 +1,26 @@
+apply plugin: "java"
+apply plugin: com.orbitz.gradle.cobertura.CoberturaPlugin
+
+buildscript {
+    def repo_location = buildDir.path + '/../..';
+    println repo_location
+    repositories {
+        add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
+            name = 'local_cobertura' // or whatever you want to put here
+            addArtifactPattern "$repo_location/repo/[organization]/[module]/[revision]/[artifact]-[revision].[ext]"
+            addIvyPattern "$repo_location/repo/[organization]/[module]/[revision]/ivy.xml"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'gradle_cobertura:gradle_cobertura:1.0'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.4'
+}
