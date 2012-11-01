@@ -25,21 +25,34 @@ class InstrumentCodeAction implements Action<Task>, IConventionAware {
     def InstrumentCodeAction(Project project) {
         conventionMapping = new ConventionAwareHelper(this, project.getConvention())
     }
+
+    def getInstrumentDir(File originalDir, Task task) {
+        def subDir
+        if (originalDir.absolutePath.startsWith(task.project.buildDir.absolutePath)) {
+            subDir = originalDir.absolutePath.substring(task.project.buildDir.absolutePath.length())
+        } else {
+            subDir = originalDir.name
+        }
+        "${task.project.buildDir}/instrumented_classes/${subDir}" as String
+    }
     
     void execute(Task task) {
         def instrumentDirs = [] as Set
         getClassesDirs().each { File f ->
             if (f.isDirectory()) {
-                task.classpath = task.classpath - task.project.files(f) + task.project.files("${task.project.buildDir}/instrumented_classes")
+                def instrumentDir = getInstrumentDir(f, task)
                 task.project.copy {
-                    into "${task.project.buildDir}/instrumented_classes"
+                    into instrumentDir
                     from f
                 }
-                instrumentDirs << ("${task.project.buildDir}/instrumented_classes" as String)
+                instrumentDirs << instrumentDir
             } else {
                 instrumentDirs << f.path
             }
         }
+        task.classpath = task.project.files(task.classpath.files.collect { File f ->
+            getClassesDirs().contains(f) ? getInstrumentDir(f, task) : f
+        })
         runner.instrument null, getDatafile().path, getDestinationDir()?.path, getIgnores() as List, getIncludes() as List,
                 getExcludes() as List, instrumentDirs as List
     }
